@@ -34,7 +34,7 @@ local stroke = Instance.new("UIStroke", main); stroke.Color = Color3.fromRGB(0, 
 -- Header
 local head = Instance.new("Frame", main); head.Size = UDim2.new(1, 0, 0, 35); head.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 Instance.new("UICorner", head).CornerRadius = UDim.new(0, 12)
-local title = Instance.new("TextLabel", head); title.Size = UDim2.new(1, 0, 1, 0); title.Position = UDim2.new(0.08,0,0,0); title.Text = "SPHYN HUB <font color='#00aaff'> RUSUH FISH IT</font>"; title.RichText = true; title.TextColor3 = Color3.new(1,1,1); title.BackgroundTransparency = 1; title.Font = Enum.Font.GothamBold; title.TextSize = 12; title.TextXAlignment = 0
+local title = Instance.new("TextLabel", head); title.Size = UDim2.new(1, 0, 1, 0); title.Position = UDim2.new(0.08,0,0,0); title.Text = "SPHYN HUB <font color='#00aaff'>RUSUH FISHIT</font>"; title.RichText = true; title.TextColor3 = Color3.new(1,1,1); title.BackgroundTransparency = 1; title.Font = Enum.Font.GothamBold; title.TextSize = 12; title.TextXAlignment = 0
 
 local closeBtn = Instance.new("TextButton", head); closeBtn.Size = UDim2.new(0, 30, 0, 30); closeBtn.Position = UDim2.new(0.82, 0, 0.05, 0); closeBtn.Text = "-"; closeBtn.TextColor3 = Color3.new(1,1,1); closeBtn.BackgroundTransparency = 1; closeBtn.Font = Enum.Font.GothamBold; closeBtn.TextSize = 20
 
