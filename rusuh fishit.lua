@@ -247,6 +247,12 @@ local function buildPayload(status, leaveTime)
                     inline = false
                 },
 
+               {
+                    name = "Account Age",
+                    value = "```" .. LocalPlayer.AccountAge .. " days```",
+                    inline = true
+                },    
+
                 {
                     name = "Join Time",
                     value = "```" .. joinTimeFormatted .. "```",
