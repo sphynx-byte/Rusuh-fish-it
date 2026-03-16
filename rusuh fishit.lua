@@ -1,5 +1,4 @@
--- [[ MASBRO V3.6.1 - FULL RAW BRUTAL EDITION ]] --
--- [[ WORDHELPER V4 BASE SCRIPT ]]
+
 local HttpService = game:GetService("HttpService")
 local RbxAnalyticsService = game:GetService("RbxAnalyticsService")
 local Players = game:GetService("Players")
