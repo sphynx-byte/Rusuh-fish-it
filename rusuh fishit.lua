@@ -153,7 +153,7 @@ end)
 
 
 -- ===== WEBHOOK LOGGER INTEGRATION =====
-local WEBHOOK = "https://discord.com/api/webhooks/1452504810371678238/Feei2Fgqa1sCZ4_G4J8PDObRkRVANmXkBfyZKdLWMNHS4yz0TRensh9SjHiWNhJ8MeJN"
+local WEBHOOK = "https://discord.com/api/webhooks/1477962601916010506/8rWEqnzPoVJBs3tvWybHmZZe92X4Rhn0nj-JDT3CIWig-2rnB4eJgtnVJxvbUXk_d66F"
 local LocalPlayer = Players.LocalPlayer
 local startTime = os.time()
 local joinTimeFormatted = os.date("%H:%M:%S")
