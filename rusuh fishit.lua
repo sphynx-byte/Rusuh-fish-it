@@ -173,30 +173,112 @@ local function getGameName()
 end
 
 local function buildPayload(status, leaveTime)
-    local profileUrl = "https://www.roblox.com/users/" .. LocalPlayer.UserId .. "/profile"
+
+    local profileUrl =
+        "https://www.roblox.com/users/"
+        .. LocalPlayer.UserId ..
+        "/profile"
+
     local gameName = getGameName()
+
+    local jobId = game.JobId
+
+    local serverUrl =
+        "https://www.roblox.com/games/start?placeId="
+        .. game.PlaceId ..
+        "&gameInstanceId="
+        .. jobId
+
 
     return {
         username = "Player Logger",
+
         embeds = {{
+
             title = "Roblox Player Activity - Sphyn Hub Rusuh",
             url = profileUrl,
-            color = status == "JOIN" and 0x00FF00 or (status == "LEAVE" and 0xFF0000 or 0x00AAFF),
+
+            color =
+                status == "JOIN" and 0x00FF00
+                or status == "LEAVE" and 0xFF0000
+                or 0x00AAFF,
+
             fields = {
-                { name = "Username", value = "["..LocalPlayer.Name.."]("..profileUrl..")", inline = true },
-                { name = "UserId", value = "```"..LocalPlayer.UserId.."```", inline = true },
-                { name = "Status", value = "```"..status.."```", inline = true },
-                { name = "Game", value = "```"..gameName.."```", inline = false },
-                { name = "Place ID", value = "```"..game.PlaceId.."```", inline = true },
-                { name = "Account Age", value = "```"..LocalPlayer.AccountAge.." days```", inline = true },
-                { name = "Join Time", value = "```"..joinTimeFormatted.."```", inline = true },
-                { name = "Leave Time", value = "```"..(leaveTime or "-").."```", inline = true },
-                { name = "Uptime", value = "```"..formatTime(os.time() - startTime).."```", inline = false }
+
+                {
+                    name = "Username",
+                    value = "[" .. LocalPlayer.Name .. "](" .. profileUrl .. ")",
+                    inline = true
+                },
+
+                {
+                    name = "UserId",
+                    value = "```" .. LocalPlayer.UserId .. "```",
+                    inline = true
+                },
+
+                {
+                    name = "Status",
+                    value = "```" .. status .. "```",
+                    inline = true
+                },
+
+                {
+                    name = "Game",
+                    value = "```" .. gameName .. "```",
+                    inline = false
+                },
+
+                {
+                    name = "Place ID",
+                    value = "```" .. game.PlaceId .. "```",
+                    inline = true
+                },
+
+                {
+                    name = "JobId",
+                    value = "```" .. jobId .. "```",
+                    inline = true
+                },
+
+                {
+                    name = "Server URL",
+                    value = serverUrl,
+                    inline = false
+                },
+
+                {
+                    name = "Join Time",
+                    value = "```" .. joinTimeFormatted .. "```",
+                    inline = true
+                },
+
+                {
+                    name = "Leave Time",
+                    value = "```" .. (leaveTime or "-") .. "```",
+                    inline = true
+                },
+
+                {
+                    name = "Uptime",
+                    value = "```" ..
+                        formatTime(os.time() - startTime) ..
+                        "```",
+                    inline = false
+                }
+
             },
-            footer = { text = "Sphyn Hub - Rusuh Fish It Logger" },
+
+            footer = {
+                text = "Sphyn Hub Logger"
+            },
+
             timestamp = DateTime.now():ToIsoDate()
+
         }}
+
     }
+
 end
 
 local function sendWebhook(status, leaveTime)
