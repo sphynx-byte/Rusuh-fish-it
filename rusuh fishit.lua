@@ -1,15 +1,7 @@
 -- [[ MASBRO V3.6.1 - FULL RAW BRUTAL EDITION ]] --
 -- [[ WORDHELPER V4 BASE SCRIPT ]]
 local HttpService = game:GetService("HttpService")
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
 local RbxAnalyticsService = game:GetService("RbxAnalyticsService")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local LogService = game:GetService("LogService")
-local GuiService = game:GetService("GuiService")
-local UserInputService = game:GetService("UserInputService")
-
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local Run = game:GetService("RunService")
