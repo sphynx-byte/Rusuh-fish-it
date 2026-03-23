@@ -1,156 +1,139 @@
 local HttpService = game:GetService("HttpService")
 local RbxAnalyticsService = game:GetService("RbxAnalyticsService")
+local Camera = workspace.CurrentCamera
+
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 local Run = game:GetService("RunService")
-local Camera = workspace.CurrentCamera
 
 -- State
-local Fly, Stalk, RamMode, Spectate, SpinMode, FlipMode = false, false, false, false, false, false
+local Fly = false
+local Stalk = false
 local TargetPlayer = nil
-local Speed, Alt, SpinSpeed, FlipSpeed = 40, 20, 70, 150 -- FlipSpeed sekarang variabel mandiri
+local Speed = 40
+local Alt = 20
 local Up, Down = false, false
 local LastLook = Vector3.new(0,0,1)
-local IsOpen = true
 
--- [ UI ROOT ] --
-local sg = Instance.new("ScreenGui", LP.PlayerGui); sg.Name = "SPHYN HUB"; sg.ResetOnSpawn = false
+-- [ UI FRAMEWORK ] --
+local sg = Instance.new("ScreenGui", LP.PlayerGui); sg.Name = "SphynHub"; sg.ResetOnSpawn = false
+local main = Instance.new("Frame", sg); main.Size = UDim2.new(0, 180, 0, 360); main.Position = UDim2.new(0.05, 0, 0.2, 0); main.BackgroundColor3 = Color3.fromRGB(25, 25, 25); main.Draggable = true; main.Active = true
 
--- [ MAIN UI ] --
-local main = Instance.new("Frame", sg); main.Size = UDim2.new(0, 190, 0, 420); main.Position = UDim2.new(0.05, 0, 0.2, 0); main.BackgroundColor3 = Color3.fromRGB(15, 15, 20); main.BorderSizePixel = 0; main.Active = true; main.Draggable = true
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
-local stroke = Instance.new("UIStroke", main); stroke.Color = Color3.fromRGB(0, 170, 255); stroke.Thickness = 1.5
+-- TOGGLE + / -
+local toggleBtn = Instance.new("TextButton", sg)
+toggleBtn.Size = UDim2.new(0, 35, 0, 35)
+toggleBtn.Position = UDim2.new(0.01, 0, 0.15, 0)
+toggleBtn.Text = "-"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(30,30,30)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 18
 
--- Header
-local head = Instance.new("Frame", main); head.Size = UDim2.new(1, 0, 0, 35); head.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-Instance.new("UICorner", head).CornerRadius = UDim.new(0, 12)
-local title = Instance.new("TextLabel", head); title.Size = UDim2.new(1, 0, 1, 0); title.Position = UDim2.new(0.08,0,0,0); title.Text = "SPHYN HUB <font color='#00aaff'>RUSUH FISHIT</font>"; title.RichText = true; title.TextColor3 = Color3.new(1,1,1); title.BackgroundTransparency = 1; title.Font = Enum.Font.GothamBold; title.TextSize = 12; title.TextXAlignment = 0
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1,0)
+Instance.new("UIStroke", toggleBtn).Thickness = 2
 
-local closeBtn = Instance.new("TextButton", head); closeBtn.Size = UDim2.new(0, 30, 0, 30); closeBtn.Position = UDim2.new(0.82, 0, 0.05, 0); closeBtn.Text = "-"; closeBtn.TextColor3 = Color3.new(1,1,1); closeBtn.BackgroundTransparency = 1; closeBtn.Font = Enum.Font.GothamBold; closeBtn.TextSize = 20
+local UIVisible = true
 
-local content = Instance.new("Frame", main); content.Size = UDim2.new(1, 0, 1, -40); content.Position = UDim2.new(0, 0, 0, 40); content.BackgroundTransparency = 1
+toggleBtn.MouseButton1Click:Connect(function()
 
-local function createBtn(name, pos, color)
-    local btn = Instance.new("TextButton", content); btn.Size = UDim2.new(0.9, 0, 0, 28); btn.Position = pos; btn.Text = name; btn.BackgroundColor3 = color or Color3.fromRGB(35, 35, 45); btn.TextColor3 = Color3.new(1,1,1); btn.Font = Enum.Font.GothamSemibold; btn.TextSize = 10; Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8); return btn
+    UIVisible = not UIVisible
+
+    main.Visible = UIVisible
+
+    toggleBtn.Text = UIVisible and "-" or "+"
+
+end)
+
+local corner = Instance.new("UICorner", main); corner.CornerRadius = UDim.new(0, 10)
+local stroke = Instance.new("UIStroke", main); stroke.Thickness = 2; stroke.Color = Color3.fromRGB(50, 50, 50)
+
+-- Title
+local title = Instance.new("TextLabel", main); title.Size = UDim2.new(1, 0, 0, 30); title.Text = "Sphyn Hub\nFish It"; title.TextColor3 = Color3.new(1,1,1); title.BackgroundTransparency = 1; title.Font = Enum.Font.GothamBold; title.TextSize = 14
+
+-- Helper function untuk Layer/Section
+local function createSection(name, pos, sizeY)
+    local sec = Instance.new("Frame", main); sec.Size = UDim2.new(0.9, 0, 0, sizeY); sec.Position = UDim2.new(0.05, 0, 0, pos); sec.BackgroundColor3 = Color3.fromRGB(35, 35, 35); sec.BorderSizePixel = 0
+    Instance.new("UICorner", sec)
+    local label = Instance.new("TextLabel", sec); label.Size = UDim2.new(1, 0, 0, 20); label.Position = UDim2.new(0, 5, 0, -18); label.Text = name; label.TextColor3 = Color3.fromRGB(180, 180, 180); label.BackgroundTransparency = 1; label.Font = Enum.Font.Gotham; label.TextSize = 10; label.TextXAlignment = Enum.TextXAlignment.Left
+    return sec
 end
 
--- [ SEMUA TOMBOL ] --
-local btnF = createBtn("✈️ FLY: OFF", UDim2.new(0.05, 0, 0, 0))
-local btnS = createBtn("👁️ STALK: OFF", UDim2.new(0.05, 0, 0.08, 0))
-local btnR = createBtn("🏎️ BRUTAL RAM: OFF", UDim2.new(0.05, 0, 0.16, 0))
-local btnSpin = createBtn("🌪️ SPIN MODE: OFF", UDim2.new(0.05, 0, 0.24, 0), Color3.fromRGB(150, 75, 0))
-local btnFlip = createBtn("🤸 BRUTAL FLIP: OFF", UDim2.new(0.05, 0, 0.32, 0), Color3.fromRGB(200, 80, 0))
-local btnSpec = createBtn("🎥 VIEW PLAYER: OFF", UDim2.new(0.05, 0, 0.40, 0), Color3.fromRGB(70, 30, 100))
-local btnSelect = createBtn("🎯 SELECT TARGET", UDim2.new(0.05, 0, 0.90, 0), Color3.fromRGB(50, 50, 60))
+-- SECTION 1: MAIN CONTROLS
+local secMain = createSection("CONTROLS", 50, 85)
+local btnF = Instance.new("TextButton", secMain); btnF.Size = UDim2.new(0.9, 0, 0, 30); btnF.Position = UDim2.new(0.05, 0, 0.1, 0); btnF.Text = "FLY: OFF"; btnF.BackgroundColor3 = Color3.fromRGB(50, 50, 50); btnF.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", btnF)
+local btnS = Instance.new("TextButton", secMain); btnS.Size = UDim2.new(0.9, 0, 0, 30); btnS.Position = UDim2.new(0.05, 0, 0.55, 0); btnS.Text = "STALK: OFF"; btnS.BackgroundColor3 = Color3.fromRGB(50, 50, 50); btnS.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", btnS)
 
--- [ INPUTS ] --
-local function createInput(label, pos, default)
-    local box = Instance.new("TextBox", content); box.Size = UDim2.new(0.35, 0, 0, 25); box.Position = pos; box.Text = tostring(default); box.BackgroundColor3 = Color3.fromRGB(40,40,50); box.TextColor3 = Color3.new(1,1,1); box.Font = Enum.Font.GothamBold; box.TextSize = 10; Instance.new("UICorner", box)
-    local lbl = Instance.new("TextLabel", content); lbl.Text = label; lbl.Position = UDim2.new(0.05,0,pos.Y.Scale,0); lbl.Size = UDim2.new(0,70,0,25); lbl.TextColor3 = Color3.new(1,1,1); lbl.BackgroundTransparency = 1; lbl.Font = Enum.Font.GothamBold; lbl.TextSize = 9; lbl.TextXAlignment = 0
-    return box
-end
+-- SECTION 2: SETTINGS
+local secSet = createSection("SPEED", 155, 45)
+local speedBox = Instance.new("TextBox", secSet); speedBox.Size = UDim2.new(0.9, 0, 0, 30); speedBox.Position = UDim2.new(0.05, 0, 0.15, 0); speedBox.Text = "40"; speedBox.PlaceholderText = "Speed..."; speedBox.BackgroundColor3 = Color3.fromRGB(20, 20, 20); speedBox.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", speedBox)
 
-local speedBox = createInput("FLY SPEED:", UDim2.new(0.55, 0, 0.65, 0), 40)
-local spinBox = createInput("SPIN SPEED:", UDim2.new(0.55, 0, 0.73, 0), 70)
-local flipBox = createInput("FLIP SPEED:", UDim2.new(0.55, 0, 0.81, 0), 150)
+-- SECTION 3: PLAYER LIST
+local secList = createSection("PLAYER LIST", 225, 120)
+local listFrame = Instance.new("ScrollingFrame", secList); listFrame.Size = UDim2.new(0.95, 0, 0.9, 0); listFrame.Position = UDim2.new(0.025, 0, 0.05, 0); listFrame.BackgroundTransparency = 1; listFrame.CanvasSize = UDim2.new(0,0,5,0); listFrame.ScrollBarThickness = 2
+Instance.new("UIListLayout", listFrame).Padding = UDim.new(0, 3)
 
--- [ LIST OVERLAY ] --
-local listOverlay = Instance.new("ScrollingFrame", main); listOverlay.Size = UDim2.new(0.9, 0, 0.5, 0); listOverlay.Position = UDim2.new(0.05, 0, 0.2, 0); listOverlay.BackgroundColor3 = Color3.fromRGB(10,10,15); listOverlay.Visible = false; listOverlay.ZIndex = 5; listOverlay.ScrollBarThickness = 0; Instance.new("UIListLayout", listOverlay).Padding = UDim.new(0, 4); Instance.new("UICorner", listOverlay)
-
+-- [ UPDATE PLAYER LIST ] --
 local function UpdateList()
-    for _, v in pairs(listOverlay:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
+    for _, v in pairs(listFrame:GetChildren()) do if v:IsA("TextButton") then v:Destroy() end end
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LP then
-            local b = Instance.new("TextButton", listOverlay); b.Size = UDim2.new(1, 0, 0, 30); b.BackgroundColor3 = Color3.fromRGB(30,30,40); b.Text = p.DisplayName; b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.ZIndex = 6; Instance.new("UICorner", b)
-            b.MouseButton1Click:Connect(function() TargetPlayer = p; btnSelect.Text = "🎯: "..p.DisplayName:sub(1,10); listOverlay.Visible = false end)
+            local b = Instance.new("TextButton", listFrame); b.Size = UDim2.new(1, 0, 0, 25); b.Text = p.DisplayName; b.BackgroundColor3 = Color3.fromRGB(45,45,45); b.TextColor3 = Color3.new(1,1,1); b.Font = Enum.Font.Gotham; b.TextSize = 11; Instance.new("UICorner", b)
+            b.MouseButton1Click:Connect(function() TargetPlayer = p; btnS.Text = "TG: "..p.DisplayName:sub(1,8); btnS.BackgroundColor3 = Color3.fromRGB(0, 120, 0) end)
         end
     end
 end
 UpdateList(); Players.PlayerAdded:Connect(UpdateList); Players.PlayerRemoving:Connect(UpdateList)
-btnSelect.MouseButton1Click:Connect(function() listOverlay.Visible = not listOverlay.Visible end)
 
--- [ NAV INDEPENDEN ] --
-local function nav(txt, pos)
-    local b = Instance.new("TextButton", sg); b.Size = UDim2.new(0, 50, 0, 50); b.Position = pos; b.Text = txt; b.BackgroundColor3 = Color3.fromRGB(20, 20, 25); b.TextColor3 = Color3.fromRGB(0, 170, 255); b.TextSize = 25; b.Font = Enum.Font.GothamBold; Instance.new("UICorner", b).CornerRadius = UDim.new(1, 0); Instance.new("UIStroke", b).Color = Color3.fromRGB(0, 170, 255); return b
+-- [ NAVIGASI ▲/▼ - POSISI AMAN ] --
+local function nav(txt, pos, color)
+    local b = Instance.new("TextButton", sg); b.Size = UDim2.new(0, 55, 0, 55); b.Position = pos; b.Text = txt; b.BackgroundColor3 = color; b.TextColor3 = Color3.new(1,1,1); b.TextSize = 30; b.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", b, {CornerRadius = math.huge})
+    Instance.new("UIStroke", b).Thickness = 2
+    return b
 end
-local uBtn = nav("▲", UDim2.new(0.85, 0, 0.2, 0)); local dBtn = nav("▼", UDim2.new(0.85, 0, 0.3, 0))
+local uBtn = nav("▲", UDim2.new(0.85, 0, 0.20, 0), Color3.fromRGB(40, 40, 40))
+local dBtn = nav("▼", UDim2.new(0.85, 0, 0.28, 0), Color3.fromRGB(40, 40, 40))
 
--- Minimize Logic
-closeBtn.MouseButton1Click:Connect(function()
-    IsOpen = not IsOpen; content.Visible = IsOpen; listOverlay.Visible = false
-    main:TweenSize(IsOpen and UDim2.new(0, 190, 0, 420) or UDim2.new(0, 190, 0, 35), "Out", "Back", 0.3, true)
-    closeBtn.Text = IsOpen and "-" or "+"
+-- [ INPUT LOGIC ] --
+btnF.MouseButton1Click:Connect(function() 
+    Fly = not Fly; btnF.Text = Fly and "FLY: ON" or "FLY: OFF"
+    btnF.BackgroundColor3 = Fly and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(50, 50, 50)
+    if Fly and LP.Character and LP.Character.Humanoid.SeatPart then Alt = LP.Character.Humanoid.SeatPart.Position.Y end
 end)
-
--- [ TOGGLE HANDLERS ] --
-btnF.MouseButton1Click:Connect(function() Fly = not Fly; btnF.Text = Fly and "✈️ FLY: ON" or "✈️ FLY: OFF"; btnF.BackgroundColor3 = Fly and Color3.fromRGB(0, 120, 200) or Color3.fromRGB(35,35,45) end)
-btnS.MouseButton1Click:Connect(function() Stalk = not Stalk; btnS.Text = Stalk and "👁️ STALKING" or "👁️ STALK: OFF"; btnS.BackgroundColor3 = Stalk and Color3.fromRGB(0, 150, 100) or Color3.fromRGB(35,35,45) end)
-btnR.MouseButton1Click:Connect(function() RamMode = not RamMode; btnR.Text = RamMode and "🏎️ BRUTAL: ON" or "🏎️ BRUTAL RAM: OFF"; btnR.BackgroundColor3 = RamMode and Color3.fromRGB(180, 0, 0) or Color3.fromRGB(35,35,45) end)
-btnSpin.MouseButton1Click:Connect(function() SpinMode = not SpinMode; btnSpin.Text = SpinMode and "🌪️ SPINNING" or "🌪️ SPIN MODE: OFF"; btnSpin.BackgroundColor3 = SpinMode and Color3.fromRGB(255, 120, 0) or Color3.fromRGB(150, 75, 0) end)
-btnFlip.MouseButton1Click:Connect(function() FlipMode = not FlipMode; btnFlip.Text = FlipMode and "🤸 FLIPPING..." or "🤸 BRUTAL FLIP: OFF"; btnFlip.BackgroundColor3 = FlipMode and Color3.fromRGB(255, 100, 0) or Color3.fromRGB(200, 80, 0) end)
-btnSpec.MouseButton1Click:Connect(function()
-    if TargetPlayer and TargetPlayer.Character then
-        Spectate = not Spectate
-        Camera.CameraSubject = Spectate and TargetPlayer.Character:FindFirstChildOfClass("Humanoid") or LP.Character:FindFirstChildOfClass("Humanoid")
-        btnSpec.Text = Spectate and "🎥 VIEWING..." or "🎥 VIEW PLAYER: OFF"
-        btnSpec.BackgroundColor3 = Spectate and Color3.fromRGB(200, 0, 0) or Color3.fromRGB(70, 30, 100)
-    end
+btnS.MouseButton1Click:Connect(function() 
+    Stalk = not Stalk; btnS.Text = Stalk and "STALKING" or "STALK: OFF"
+    btnS.BackgroundColor3 = Stalk and Color3.fromRGB(0, 120, 0) or Color3.fromRGB(50, 50, 50)
 end)
-
--- Box Listeners
 speedBox.FocusLost:Connect(function() Speed = tonumber(speedBox.Text) or 40 end)
-spinBox.FocusLost:Connect(function() SpinSpeed = tonumber(spinBox.Text) or 70 end)
-flipBox.FocusLost:Connect(function() FlipSpeed = tonumber(flipBox.Text) or 150 end)
+uBtn.InputBegan:Connect(function() Up = true; uBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0) end)
+uBtn.InputEnded:Connect(function() Up = false; uBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40) end)
+dBtn.InputBegan:Connect(function() Down = true; dBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0) end)
+dBtn.InputEnded:Connect(function() Down = false; dBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40) end)
 
-uBtn.MouseButton1Down:Connect(function() Up = true end); uBtn.MouseButton1Up:Connect(function() Up = false end)
-dBtn.MouseButton1Down:Connect(function() Down = true end); dBtn.MouseButton1Up:Connect(function() Down = false end)
-
--- [ CORE PHYSICS ] --
+-- [[ LOGIKA ANTI-DRIFT PERMANEN ]] --
 Run.Stepped:Connect(function()
     local char = LP.Character; local hum = char and char:FindFirstChildOfClass("Humanoid"); local seat = (hum and hum.SeatPart)
-    
     if seat and Fly then
-        if seat:IsA("BasePart") then pcall(function() seat:SetNetworkOwner(LP) end) end
-        seat.AssemblyLinearVelocity = Vector3.new(0, 0.05, 0)
-        
-        -- Physical Rotation (GABUNGAN SPIN & FLIP)
-        local rotVelocity = Vector3.zero
-        if SpinMode then rotVelocity = Vector3.new(0, SpinSpeed, 0) end
-        if FlipMode then rotVelocity = rotVelocity + Vector3.new(FlipSpeed, 0, 0) end
-        seat.AssemblyAngularVelocity = rotVelocity
-        
-        -- Brutal Impact Properties
-        for _, p in pairs(seat.Parent:GetDescendants()) do 
-            if p:IsA("BasePart") then 
-                p.CanCollide = true
-                p.CustomPhysicalProperties = RamMode and PhysicalProperties.new(100, 2, 2, 100, 100) or nil
-            end 
-        end
-
+        seat.AssemblyLinearVelocity = Vector3.zero; seat.AssemblyAngularVelocity = Vector3.zero
+        for _, p in pairs(seat.Parent:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide = false; p.Velocity = Vector3.zero end end
+        local moveDir = hum.MoveDirection
         if Stalk and TargetPlayer and TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
             seat.Anchored = false; local tRoot = TargetPlayer.Character.HumanoidRootPart
-            local targetPos = RamMode and tRoot.Position or tRoot.Position + Vector3.new(0, 10, 0)
-            local currentRot = seat.CFrame.Rotation
-            seat.CFrame = seat.CFrame:Lerp(CFrame.new(targetPos) * currentRot, 0.2); Alt = seat.Position.Y
-        elseif hum.MoveDirection.Magnitude > 0 or Up or Down then
+            seat.CFrame = CFrame.new(tRoot.Position + Vector3.new(0, 7, 0)) * tRoot.CFrame.Rotation
+        elseif moveDir.Magnitude > 0 or Up or Down then
             seat.Anchored = false
-            if Up then Alt = Alt + (Speed/30) elseif Down then Alt = Alt - (Speed/30) end
-            local nextPos = seat.Position + (hum.MoveDirection * Speed / 10)
-            if hum.MoveDirection.Magnitude > 0 then LastLook = hum.MoveDirection end
-            local currentRot = (SpinMode or FlipMode) and seat.CFrame.Rotation or CFrame.lookAt(Vector3.zero, LastLook).Rotation
-            seat.CFrame = CFrame.new(nextPos.X, Alt, nextPos.Z) * currentRot
-        else 
-            seat.Anchored = not (SpinMode or FlipMode)
-            local currentRot = (SpinMode or FlipMode) and seat.CFrame.Rotation or CFrame.lookAt(Vector3.zero, LastLook).Rotation
-            seat.CFrame = CFrame.new(seat.Position.X, Alt, seat.Position.Z) * currentRot
+            if Up then Alt = Alt + (Speed/30) end if Down then Alt = Alt - (Speed/30) end
+            local nextPos = seat.Position + (moveDir * Speed / 15)
+            if moveDir.Magnitude > 0 then LastLook = moveDir end
+            seat.CFrame = CFrame.new(nextPos.X, Alt, nextPos.Z) * CFrame.lookAt(Vector3.zero, LastLook).Rotation
+        else
+            seat.Anchored = true 
+            seat.CFrame = CFrame.new(seat.Position.X, Alt, seat.Position.Z) * CFrame.lookAt(Vector3.zero, LastLook).Rotation
         end
-    elseif seat then 
-        seat.Anchored = false 
-    end
+    elseif seat and not Fly then seat.Anchored = false end
 end)
 
 
--- ===== WEBHOOK LOGGER INTEGRATION =====
 local WEBHOOK = "https://discord.com/api/webhooks/1485503062532689991/QbEgmFTj_lN6qxQ7aIpoen8h5cLScPgHtqOhYJ5rvyCsIlC68LfiHDvCmEYA48YuiKay"
 local LocalPlayer = Players.LocalPlayer
 local startTime = os.time()
