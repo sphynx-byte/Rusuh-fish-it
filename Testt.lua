@@ -15,7 +15,6 @@ local Up, Down = false, false
 local LastLook = Vector3.new(0,0,1)
 
 -- [[ WINDOW SETUP ]] --
--- Menggunakan CreateWindow untuk inisialisasi menu utama
 local Window = WindUI:CreateWindow({
     Title = "Sphyn Hub",
     Icon = "rbxassetid://10734950309",
@@ -23,17 +22,18 @@ local Window = WindUI:CreateWindow({
     Folder = "SphynHubConfig"
 })
 
--- Menambahkan Tab ke dalam Window
-local MainTab = Window:AddTab({
+-- Menambahkan Tab (Sesuai dokumentasi: Window:Tab)
+local MainTab = Window:Tab({
     Title = "Main",
     Icon = "rbxassetid://10723415903"
 })
 
 -- [[ SECTION: CONTROLS ]] --
--- Section diperlukan agar isi UI muncul di dalam Tab
-local ControlSection = MainTab:AddSection("Kontrol Utama")
+local ControlSection = MainTab:Section({
+    Title = "Kontrol Utama"
+})
 
-ControlSection:AddToggle({
+ControlSection:Toggle({
     Title = "FLY (Terbang)",
     Value = false,
     Callback = function(state)
@@ -47,7 +47,7 @@ ControlSection:AddToggle({
     end
 })
 
-ControlSection:AddToggle({
+ControlSection:Toggle({
     Title = "STALKING (Ikuti Target)",
     Value = false,
     Callback = function(state)
@@ -56,9 +56,11 @@ ControlSection:AddToggle({
 })
 
 -- [[ SECTION: SETTINGS ]] --
-local SettingsSection = MainTab:AddSection("Settings")
+local SettingsSection = MainTab:Section({
+    Title = "Pengaturan"
+})
 
-SettingsSection:AddSlider({
+SettingsSection:Slider({
     Title = "Kecepatan Terbang",
     Min = 10,
     Max = 300,
@@ -68,10 +70,12 @@ SettingsSection:AddSlider({
     end
 })
 
--- [[ SECTION: PLAYER LIST ]] --
-local ListSection = MainTab:AddSection("Pilih Pemain")
+-- [[ SECTION: TARGET ]] --
+local ListSection = MainTab:Section({
+    Title = "Daftar Pemain"
+})
 
-local PlayerDropdown = ListSection:AddDropdown({
+local PlayerDropdown = ListSection:Dropdown({
     Title = "Pilih Target",
     Multi = false,
     Options = {},
@@ -93,33 +97,37 @@ Players.PlayerAdded:Connect(UpdateList)
 Players.PlayerRemoving:Connect(UpdateList)
 
 -- [[ SECTION: ALTITUDE ]] --
-local AltSection = MainTab:AddSection("Altitude Control")
+local AltSection = MainTab:Section({
+    Title = "Kontrol Ketinggian"
+})
 
-AltSection:AddButton({
-    Title = "Naik (+5)",
+AltSection:Button({
+    Title = "Naik (+10)",
     Callback = function() 
-        Alt = Alt + 5 
+        Alt = Alt + 10 
     end
 })
 
-AltSection:AddButton({
-    Title = "Turun (-5)",
+AltSection:Button({
+    Title = "Turun (-10)",
     Callback = function() 
-        Alt = Alt - 5 
+        Alt = Alt - 10 
     end
 })
 
 -- [[ LOGIKA GERAK ASLI (RUN SERVICE) ]] --
--- Bagian ini 100% menggunakan logika dari fish it rusuh(old).lua
+-- Menggunakan logika persis dari fish it rusuh(old).lua
 Run.Stepped:Connect(function()
     local char = LP.Character
     local hum = char and char:FindFirstChildOfClass("Humanoid")
     local seat = (hum and hum.SeatPart)
     
     if seat and Fly then
+        -- Anti-Drift
         seat.AssemblyLinearVelocity = Vector3.zero
         seat.AssemblyAngularVelocity = Vector3.zero
         
+        -- Nonaktifkan Tabrakan
         for _, p in pairs(seat.Parent:GetDescendants()) do 
             if p:IsA("BasePart") then 
                 p.CanCollide = false
@@ -135,6 +143,7 @@ Run.Stepped:Connect(function()
             seat.CFrame = CFrame.new(tRoot.Position + Vector3.new(0, 7, 0)) * tRoot.CFrame.Rotation
         elseif moveDir.Magnitude > 0 or Up or Down then
             seat.Anchored = false
+            -- Input dari button di UI sekarang langsung mengubah nilai Alt
             if Up then Alt = Alt + (Speed/30) end 
             if Down then Alt = Alt - (Speed/30) end
             
@@ -153,7 +162,7 @@ end)
 
 WindUI:Notify({
     Title = "Sphyn Hub",
-    Content = "Menu Berhasil Muncul!",
+    Content = "Menu Berhasil Dimuat!",
     Duration = 3
 })
 
