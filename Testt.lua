@@ -1,4 +1,4 @@
-local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesess/WindUI/main/Main.lua"))()
 local HttpService = game:GetService("HttpService")
 local RbxAnalyticsService = game:GetService("RbxAnalyticsService")
 local Camera = workspace.CurrentCamera
