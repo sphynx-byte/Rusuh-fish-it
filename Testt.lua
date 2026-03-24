@@ -11,29 +11,31 @@ local Stalk = false
 local TargetPlayer = nil
 local Speed = 40
 local Alt = 20
-local Up, Down = false, false -- Digunakan oleh logika gerakan asli
+local Up, Down = false, false -- Digunakan oleh logika pergerakan asli
 local LastLook = Vector3.new(0,0,1)
 
 -- [[ WINDOW SETUP ]] --
 local Window = WindUI:CreateWindow({
     Title = "Sphyn Hub",
-    Icon = "fish",
+    Icon = "rbxassetid://10734950309", -- Icon pancing/ikan
     Author = "Bintang Kresna",
     Folder = "SphynHubConfig"
 })
 
--- Membuat Tab Utama
-local MainTab = Window:CreateTab("Main", "home")
+-- Menambahkan Tab (Gunakan AddTab sesuai library Footagesus)
+local MainTab = Window:AddTab({
+    Title = "Main",
+    Icon = "rbxassetid://10723415903" -- Icon Home
+})
 
 -- [[ SECTION: CONTROLS ]] --
-local ControlSection = MainTab:CreateSection("Kontrol Utama")
+local ControlSection = MainTab:AddSection("Kontrol Utama")
 
 ControlSection:AddToggle({
-    Title = "FLY (Terbang)",
+    Title = "FLY",
     Value = false,
     Callback = function(state)
         Fly = state
-        -- Inisialisasi Ketinggian saat Fly ON (Logika Asli)
         if Fly and LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
             local hum = LP.Character:FindFirstChildOfClass("Humanoid")
             if hum.SeatPart then 
@@ -44,7 +46,7 @@ ControlSection:AddToggle({
 })
 
 ControlSection:AddToggle({
-    Title = "STALKING (Ikuti Target)",
+    Title = "STALKING",
     Value = false,
     Callback = function(state)
         Stalk = state
@@ -52,10 +54,10 @@ ControlSection:AddToggle({
 })
 
 -- [[ SECTION: SETTINGS ]] --
-local SettingsSection = MainTab:CreateSection("Pengaturan")
+local SettingsSection = MainTab:AddSection("Settings")
 
 SettingsSection:AddSlider({
-    Title = "Kecepatan Terbang",
+    Title = "Speed",
     Min = 10,
     Max = 300,
     Default = 40,
@@ -64,11 +66,11 @@ SettingsSection:AddSlider({
     end
 })
 
--- [[ SECTION: TARGET ]] --
-local TargetSection = MainTab:CreateSection("Pilih Pemain")
+-- [[ SECTION: PLAYER LIST ]] --
+local ListSection = MainTab:AddSection("Player List")
 
-local PlayerDropdown = TargetSection:AddDropdown({
-    Title = "Pilih Target Stalk",
+local PlayerDropdown = ListSection:AddDropdown({
+    Title = "Select Target",
     Multi = false,
     Options = {},
     Callback = function(selected)
@@ -89,17 +91,17 @@ Players.PlayerAdded:Connect(UpdateList)
 Players.PlayerRemoving:Connect(UpdateList)
 
 -- [[ SECTION: ALTITUDE ]] --
-local AltSection = MainTab:CreateSection("Kontrol Ketinggian")
+local AltSection = MainTab:AddSection("Altitude Control")
 
 AltSection:AddButton({
-    Title = "Naik (+5)",
+    Title = "Altitude UP (+5)",
     Callback = function() 
         Alt = Alt + 5 
     end
 })
 
 AltSection:AddButton({
-    Title = "Turun (-5)",
+    Title = "Altitude DOWN (-5)",
     Callback = function() 
         Alt = Alt - 5 
     end
@@ -113,11 +115,9 @@ Run.Stepped:Connect(function()
     local seat = (hum and hum.SeatPart)
     
     if seat and Fly then
-        -- Anti-Drift: Reset Velocity
         seat.AssemblyLinearVelocity = Vector3.zero
         seat.AssemblyAngularVelocity = Vector3.zero
         
-        -- Nonaktifkan Tabrakan Kendaraan
         for _, p in pairs(seat.Parent:GetDescendants()) do 
             if p:IsA("BasePart") then 
                 p.CanCollide = false
@@ -127,16 +127,12 @@ Run.Stepped:Connect(function()
         
         local moveDir = hum.MoveDirection
         
-        -- Logika STALK
         if Stalk and TargetPlayer and TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
             seat.Anchored = false
             local tRoot = TargetPlayer.Character.HumanoidRootPart
             seat.CFrame = CFrame.new(tRoot.Position + Vector3.new(0, 7, 0)) * tRoot.CFrame.Rotation
-        
-        -- Logika BERGERAK
         elseif moveDir.Magnitude > 0 or Up or Down then
             seat.Anchored = false
-            -- Handling input manual altitude (jika variabel Up/Down aktif)
             if Up then Alt = Alt + (Speed/30) end 
             if Down then Alt = Alt - (Speed/30) end
             
@@ -144,8 +140,6 @@ Run.Stepped:Connect(function()
             if moveDir.Magnitude > 0 then LastLook = moveDir end
             
             seat.CFrame = CFrame.new(nextPos.X, Alt, nextPos.Z) * CFrame.lookAt(Vector3.zero, LastLook).Rotation
-        
-        -- Logika DIAM (Anchored agar tidak jatuh)
         else
             seat.Anchored = true 
             seat.CFrame = CFrame.new(seat.Position.X, Alt, seat.Position.Z) * CFrame.lookAt(Vector3.zero, LastLook).Rotation
@@ -155,12 +149,9 @@ Run.Stepped:Connect(function()
     end
 end)
 
--- Notifikasi Berhasil
 WindUI:Notify({
     Title = "Sphyn Hub",
-    Content = "Script dimuat tanpa Webhook!",
-    Duration = 5
+    Content = "Menu Berhasil Muncul!",
+    Duration = 3
 })
-
-print("SPHYN HUB: Berhasil dimuat (Tanpa Webhook).")
 
