@@ -1,4 +1,3 @@
--- UI
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Players = game:GetService("Players")
@@ -22,90 +21,57 @@ local LastLook = Vector3.new(0,0,1)
 
 
 
--- WINDOW
+-- UI
 
 local Window = Rayfield:CreateWindow({
-
     Name = "Sphyn Hub",
-
     LoadingTitle = "Sphyn Hub",
-
-    LoadingSubtitle = "Loaded",
-
+    LoadingSubtitle = "Final",
     ConfigurationSaving = {Enabled = false}
-
 })
 
-
-local MainTab = Window:CreateTab("Main", 4483362458)
-local PlayerTab = Window:CreateTab("Player", 4483362458)
-
+local MainTab = Window:CreateTab("Main",4483362458)
+local PlayerTab = Window:CreateTab("Player",4483362458)
 
 
--- MAIN
 
 MainTab:CreateToggle({
-
     Name = "Fly",
-
     CurrentValue = false,
-
     Callback = function(v)
-
         Fly = v
-
     end
-
 })
 
 
 MainTab:CreateToggle({
-
     Name = "Stalk",
-
     CurrentValue = false,
-
     Callback = function(v)
-
         Stalk = v
-
     end
-
 })
 
 
 MainTab:CreateInput({
-
     Name = "Speed",
-
     PlaceholderText = "40",
-
     RemoveTextAfterFocusLost = false,
-
     Callback = function(v)
-
         Speed = tonumber(v) or 40
-
     end
-
 })
 
 
-
--- PLAYER LIST
 
 local function getPlayers()
 
     local t = {}
 
     for _,p in pairs(Players:GetPlayers()) do
-
         if p ~= LP then
-
             table.insert(t,p.Name)
-
         end
-
     end
 
     return t
@@ -114,17 +80,11 @@ end
 
 
 PlayerTab:CreateDropdown({
-
     Name = "Target",
-
     Options = getPlayers(),
-
     Callback = function(v)
-
         TargetPlayer = Players:FindFirstChild(v)
-
     end
-
 })
 
 
@@ -132,22 +92,21 @@ PlayerTab:CreateDropdown({
 -- ALTITUDE BUTTONS
 
 local sg = Instance.new("ScreenGui")
-sg.Name = "AltitudeButtons"
+sg.Parent = LP.PlayerGui
 sg.ResetOnSpawn = false
-sg.Parent = LP:WaitForChild("PlayerGui")
 
 
-local function makeBtn(text,pos)
+local function btn(text,pos)
 
     local b = Instance.new("TextButton")
 
     b.Size = UDim2.new(0,60,0,60)
     b.Position = pos
     b.Text = text
+    b.TextScaled = true
 
     b.BackgroundColor3 = Color3.fromRGB(40,40,40)
     b.TextColor3 = Color3.new(1,1,1)
-    b.TextScaled = true
 
     Instance.new("UICorner",b).CornerRadius = UDim.new(1,0)
 
@@ -158,8 +117,8 @@ local function makeBtn(text,pos)
 end
 
 
-local upBtn = makeBtn("▲",UDim2.new(0.9,0,0.2,0))
-local downBtn = makeBtn("▼",UDim2.new(0.9,0,0.32,0))
+local upBtn = btn("▲",UDim2.new(0.9,0,0.2,0))
+local downBtn = btn("▼",UDim2.new(0.9,0,0.32,0))
 
 
 upBtn.MouseButton1Down:Connect(function()
@@ -181,7 +140,7 @@ end)
 
 
 
--- FLY LOGIC FULL
+-- FLY + STALK FINAL
 
 RunService.Stepped:Connect(function()
 
@@ -195,26 +154,24 @@ RunService.Stepped:Connect(function()
     if not seat then return end
 
 
-    if Fly then
+    if seat and Fly then
 
         seat.AssemblyLinearVelocity = Vector3.zero
         seat.AssemblyAngularVelocity = Vector3.zero
 
 
         for _,p in pairs(seat.Parent:GetDescendants()) do
-
             if p:IsA("BasePart") then
-
                 p.CanCollide = false
                 p.Velocity = Vector3.zero
-
             end
-
         end
 
 
         local moveDir = hum.MoveDirection
 
+
+        -- STALK
 
         if Stalk
         and TargetPlayer
@@ -222,10 +179,10 @@ RunService.Stepped:Connect(function()
         and TargetPlayer.Character:FindFirstChild("HumanoidRootPart")
         then
 
-            seat.Anchored = false
-
             local tRoot =
                 TargetPlayer.Character.HumanoidRootPart
+
+            seat.Anchored = false
 
             seat.CFrame =
                 CFrame.new(
@@ -233,10 +190,14 @@ RunService.Stepped:Connect(function()
                 )
                 * tRoot.CFrame.Rotation
 
+            return
 
-        elseif moveDir.Magnitude > 0
-        or Up
-        or Down then
+        end
+
+
+        -- NORMAL FLY
+
+        if moveDir.Magnitude > 0 or Up or Down then
 
             seat.Anchored = false
 
@@ -291,7 +252,7 @@ RunService.Stepped:Connect(function()
 
         end
 
-    else
+    elseif seat and not Fly then
 
         seat.Anchored = false
 
@@ -299,4 +260,4 @@ RunService.Stepped:Connect(function()
 
 end)
 
-print("SPHYN HUB FULL FINAL LOADED")
+print("SPHYN HUB FINAL LOADED")
