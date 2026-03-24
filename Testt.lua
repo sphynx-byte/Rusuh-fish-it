@@ -1,11 +1,13 @@
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
+local Run = game:GetService("RunService")
 
 local LP = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
--- STATE
+
+-- STATE (SAMA PERSIS)
 
 local Fly = false
 local Stalk = false
@@ -25,8 +27,8 @@ local LastLook = Vector3.new(0,0,1)
 
 local Window = Rayfield:CreateWindow({
     Name = "Sphyn Hub",
-    LoadingTitle = "Sphyn Hub",
-    LoadingSubtitle = "Final",
+    LoadingTitle = "Sphyn",
+    LoadingSubtitle = "Original Logic",
     ConfigurationSaving = {Enabled = false}
 })
 
@@ -40,6 +42,13 @@ MainTab:CreateToggle({
     CurrentValue = false,
     Callback = function(v)
         Fly = v
+
+        if Fly and LP.Character and LP.Character:FindFirstChildOfClass("Humanoid") then
+            local seat = LP.Character:FindFirstChildOfClass("Humanoid").SeatPart
+            if seat then
+                Alt = seat.Position.Y
+            end
+        end
     end
 })
 
@@ -64,6 +73,8 @@ MainTab:CreateInput({
 
 
 
+-- PLAYER LIST
+
 local function getPlayers()
 
     local t = {}
@@ -80,35 +91,39 @@ end
 
 
 PlayerTab:CreateDropdown({
+
     Name = "Target",
+
     Options = getPlayers(),
+
     Callback = function(v)
+
         TargetPlayer = Players:FindFirstChild(v)
+
     end
+
 })
 
 
 
--- ALTITUDE BUTTONS
+-- ALTITUDE BUTTONS (SAMA KAYAK SCRIPT KAMU)
 
-local sg = Instance.new("ScreenGui")
-sg.Parent = LP.PlayerGui
+local sg = Instance.new("ScreenGui",LP.PlayerGui)
 sg.ResetOnSpawn = false
 
-
-local function btn(text,pos)
+local function nav(txt,pos,color)
 
     local b = Instance.new("TextButton")
 
-    b.Size = UDim2.new(0,60,0,60)
+    b.Size = UDim2.new(0,55,0,55)
     b.Position = pos
-    b.Text = text
+    b.Text = txt
+    b.BackgroundColor3 = color
+    b.TextColor3 = Color3.new(1,1,1)
     b.TextScaled = true
 
-    b.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    b.TextColor3 = Color3.new(1,1,1)
-
     Instance.new("UICorner",b).CornerRadius = UDim.new(1,0)
+    Instance.new("UIStroke",b).Thickness = 2
 
     b.Parent = sg
 
@@ -117,61 +132,53 @@ local function btn(text,pos)
 end
 
 
-local upBtn = btn("▲",UDim2.new(0.9,0,0.2,0))
-local downBtn = btn("▼",UDim2.new(0.9,0,0.32,0))
+local uBtn = nav("▲",UDim2.new(0.85,0,0.20,0),Color3.fromRGB(40,40,40))
+local dBtn = nav("▼",UDim2.new(0.85,0,0.28,0),Color3.fromRGB(40,40,40))
 
 
-upBtn.MouseButton1Down:Connect(function()
+uBtn.MouseButton1Down:Connect(function()
     Up = true
 end)
 
-upBtn.MouseButton1Up:Connect(function()
+uBtn.MouseButton1Up:Connect(function()
     Up = false
 end)
 
 
-downBtn.MouseButton1Down:Connect(function()
+dBtn.MouseButton1Down:Connect(function()
     Down = true
 end)
 
-downBtn.MouseButton1Up:Connect(function()
+dBtn.MouseButton1Up:Connect(function()
     Down = false
 end)
 
 
 
--- FLY + STALK FINAL
+-- =========================
+-- LOGIC ASLI SCRIPT KAMU
+-- =========================
 
-RunService.Stepped:Connect(function()
+Run.Stepped:Connect(function()
 
     local char = LP.Character
-    if not char then return end
-
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if not hum then return end
-
-    local seat = hum.SeatPart
-    if not seat then return end
-
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local seat = hum and hum.SeatPart
 
     if seat and Fly then
 
         seat.AssemblyLinearVelocity = Vector3.zero
         seat.AssemblyAngularVelocity = Vector3.zero
 
-
-        for _,p in pairs(seat.Parent:GetDescendants()) do
+        for _, p in pairs(seat.Parent:GetDescendants()) do
             if p:IsA("BasePart") then
                 p.CanCollide = false
                 p.Velocity = Vector3.zero
             end
         end
 
-
         local moveDir = hum.MoveDirection
 
-
-        -- STALK
 
         if Stalk
         and TargetPlayer
@@ -179,10 +186,10 @@ RunService.Stepped:Connect(function()
         and TargetPlayer.Character:FindFirstChild("HumanoidRootPart")
         then
 
+            seat.Anchored = false
+
             local tRoot =
                 TargetPlayer.Character.HumanoidRootPart
-
-            seat.Anchored = false
 
             seat.CFrame =
                 CFrame.new(
@@ -190,17 +197,10 @@ RunService.Stepped:Connect(function()
                 )
                 * tRoot.CFrame.Rotation
 
-            return
 
-        end
-
-
-        -- NORMAL FLY
-
-        if moveDir.Magnitude > 0 or Up or Down then
+        elseif moveDir.Magnitude > 0 or Up or Down then
 
             seat.Anchored = false
-
 
             if Up then
                 Alt = Alt + (Speed/30)
@@ -210,16 +210,12 @@ RunService.Stepped:Connect(function()
                 Alt = Alt - (Speed/30)
             end
 
-
             local nextPos =
-                seat.Position
-                + (moveDir * Speed / 15)
-
+                seat.Position + (moveDir * Speed / 15)
 
             if moveDir.Magnitude > 0 then
                 LastLook = moveDir
             end
-
 
             seat.CFrame =
                 CFrame.new(
@@ -232,7 +228,6 @@ RunService.Stepped:Connect(function()
                     Vector3.zero,
                     LastLook
                 ).Rotation
-
 
         else
 
@@ -260,4 +255,4 @@ RunService.Stepped:Connect(function()
 
 end)
 
-print("SPHYN HUB FINAL LOADED")
+print("FINAL USING ORIGINAL LOGIC")
