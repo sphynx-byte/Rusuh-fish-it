@@ -11,28 +11,30 @@ local Stalk = false
 local TargetPlayer = nil
 local Speed = 40
 local Alt = 20
-local Up, Down = false, false -- Digunakan oleh logika pergerakan asli
+local Up, Down = false, false 
 local LastLook = Vector3.new(0,0,1)
 
 -- [[ WINDOW SETUP ]] --
+-- Menggunakan CreateWindow untuk inisialisasi menu utama
 local Window = WindUI:CreateWindow({
     Title = "Sphyn Hub",
-    Icon = "rbxassetid://10734950309", -- Icon pancing/ikan
+    Icon = "rbxassetid://10734950309",
     Author = "Bintang Kresna",
     Folder = "SphynHubConfig"
 })
 
--- Menambahkan Tab (Gunakan AddTab sesuai library Footagesus)
+-- Menambahkan Tab ke dalam Window
 local MainTab = Window:AddTab({
     Title = "Main",
-    Icon = "rbxassetid://10723415903" -- Icon Home
+    Icon = "rbxassetid://10723415903"
 })
 
 -- [[ SECTION: CONTROLS ]] --
+-- Section diperlukan agar isi UI muncul di dalam Tab
 local ControlSection = MainTab:AddSection("Kontrol Utama")
 
 ControlSection:AddToggle({
-    Title = "FLY",
+    Title = "FLY (Terbang)",
     Value = false,
     Callback = function(state)
         Fly = state
@@ -46,7 +48,7 @@ ControlSection:AddToggle({
 })
 
 ControlSection:AddToggle({
-    Title = "STALKING",
+    Title = "STALKING (Ikuti Target)",
     Value = false,
     Callback = function(state)
         Stalk = state
@@ -57,7 +59,7 @@ ControlSection:AddToggle({
 local SettingsSection = MainTab:AddSection("Settings")
 
 SettingsSection:AddSlider({
-    Title = "Speed",
+    Title = "Kecepatan Terbang",
     Min = 10,
     Max = 300,
     Default = 40,
@@ -67,10 +69,10 @@ SettingsSection:AddSlider({
 })
 
 -- [[ SECTION: PLAYER LIST ]] --
-local ListSection = MainTab:AddSection("Player List")
+local ListSection = MainTab:AddSection("Pilih Pemain")
 
 local PlayerDropdown = ListSection:AddDropdown({
-    Title = "Select Target",
+    Title = "Pilih Target",
     Multi = false,
     Options = {},
     Callback = function(selected)
@@ -78,7 +80,7 @@ local PlayerDropdown = ListSection:AddDropdown({
     end
 })
 
--- Fungsi Update List Pemain (Asli)
+-- Fungsi Update List Pemain (Logika Asli)
 local function UpdateList()
     local names = {}
     for _, p in pairs(Players:GetPlayers()) do
@@ -94,14 +96,14 @@ Players.PlayerRemoving:Connect(UpdateList)
 local AltSection = MainTab:AddSection("Altitude Control")
 
 AltSection:AddButton({
-    Title = "Altitude UP (+5)",
+    Title = "Naik (+5)",
     Callback = function() 
         Alt = Alt + 5 
     end
 })
 
 AltSection:AddButton({
-    Title = "Altitude DOWN (-5)",
+    Title = "Turun (-5)",
     Callback = function() 
         Alt = Alt - 5 
     end
